@@ -16,7 +16,7 @@ class SolarSystem(avango.script.Script):
     ## input fields
     sf_key0 = avango.SFFloat()
     sf_key1 = avango.SFFloat()
-  
+
     ## output_fields
     sf_time_scale_factor = avango.SFFloat()
     sf_time_scale_factor.value = 100.0
@@ -48,35 +48,7 @@ class SolarSystem(avango.script.Script):
             ORBIT_DURATION = 0.0,
             ROTATION_INCLINATION = 0.0,
             ROTATION_DURATION = 0.0,
-            )
-
-    	# init Earth
-        self.earth = SolarObject(
-            NAME = "earth",
-            TEXTURE_PATH = SP.EARTH_TEXTURE,
-            PARENT_NODE = self.sun.get_orbit_node(),
-            SF_TIME_SCALE = self.sf_time_scale_factor,
-            DIAMETER = SP.EARTH_DIAMETER,
-            ORBIT_RADIUS = SP.EARTH_ORBIT_RADIUS,
-            ORBIT_INCLINATION = SP.EARTH_ORBIT_INCLINATION,
-            ORBIT_DURATION = SP.EARTH_ORBIT_DURATION,
-            ROTATION_INCLINATION = SP.EARTH_ROTATION_INCLINATION,
-            ROTATION_DURATION = SP.EARTH_ROTATION_DURATION,
-            )
-
-        # init Moon
-        self.earth_moon = SolarObject(
-            NAME = "earth_moon",
-            TEXTURE_PATH = SP.EARTH_MOON_TEXTURE,
-            PARENT_NODE = self.earth.get_orbit_node(),
-            SF_TIME_SCALE = self.sf_time_scale_factor,
-            DIAMETER = SP.EARTH_MOON_DIAMETER,
-            ORBIT_RADIUS = SP.EARTH_MOON_ORBIT_RADIUS,
-            ORBIT_INCLINATION = SP.EARTH_MOON_ORBIT_INCLINATION,
-            ORBIT_DURATION = SP.EARTH_MOON_ORBIT_DURATION,
-            ROTATION_INCLINATION = SP.EARTH_MOON_ROTATION_INCLINATION,
-            ROTATION_DURATION = SP.EARTH_MOON_ROTATION_DURATION,
-            )
+        )
 
         # init Mercury
         self.mercury = SolarObject(
@@ -90,7 +62,7 @@ class SolarSystem(avango.script.Script):
             ORBIT_DURATION = SP.MERCURY_ORBIT_DURATION,
             ROTATION_INCLINATION = SP.MERCURY_ROTATION_INCLINATION,
             ROTATION_DURATION = SP.MERCURY_ROTATION_DURATION,
-            )
+        )
 
         # init Venus
         self.venus = SolarObject(
@@ -104,7 +76,36 @@ class SolarSystem(avango.script.Script):
             ORBIT_DURATION = SP.VENUS_ORBIT_DURATION,
             ROTATION_INCLINATION = SP.VENUS_ROTATION_INCLINATION,
             ROTATION_DURATION = SP.VENUS_ROTATION_DURATION,
-            )
+        )
+
+        # init Earth
+        self.earth = SolarObject(
+            NAME = "earth",
+            TEXTURE_PATH = SP.EARTH_TEXTURE,
+            PARENT_NODE = self.sun.get_orbit_node(),
+            SF_TIME_SCALE = self.sf_time_scale_factor,
+            DIAMETER = SP.EARTH_DIAMETER,
+            ORBIT_RADIUS = SP.EARTH_ORBIT_RADIUS,
+            ORBIT_INCLINATION = SP.EARTH_ORBIT_INCLINATION,
+            ORBIT_DURATION = SP.EARTH_ORBIT_DURATION,
+            ROTATION_INCLINATION = SP.EARTH_ROTATION_INCLINATION,
+            ROTATION_DURATION = SP.EARTH_ROTATION_DURATION,
+        )
+
+        # init Moon
+        self.earth_moon = SolarObject(
+            NAME = "earth_moon",
+            TEXTURE_PATH = SP.EARTH_MOON_TEXTURE,
+            PARENT_NODE = self.earth.get_orbit_node(),
+            SF_TIME_SCALE = self.sf_time_scale_factor,
+            DIAMETER = SP.EARTH_MOON_DIAMETER,
+            ORBIT_RADIUS = SP.EARTH_MOON_ORBIT_RADIUS,
+            ORBIT_INCLINATION = SP.EARTH_MOON_ORBIT_INCLINATION,
+            ORBIT_DURATION = SP.EARTH_MOON_ORBIT_DURATION,
+            ROTATION_INCLINATION = SP.EARTH_MOON_ROTATION_INCLINATION,
+            ROTATION_DURATION = SP.EARTH_MOON_ROTATION_DURATION,
+        )
+
 
         # init Mars
         self.mars = SolarObject(
@@ -118,7 +119,7 @@ class SolarSystem(avango.script.Script):
             ORBIT_DURATION = SP.MARS_ORBIT_DURATION,
             ROTATION_INCLINATION = SP.MARS_ROTATION_INCLINATION,
             ROTATION_DURATION = SP.MARS_ROTATION_DURATION,
-            )
+        )
 
         # init Jupiter
         self.jupiter = SolarObject(
@@ -132,7 +133,7 @@ class SolarSystem(avango.script.Script):
             ORBIT_DURATION = SP.JUPITER_ORBIT_DURATION,
             ROTATION_INCLINATION = SP.JUPITER_ROTATION_INCLINATION,
             ROTATION_DURATION = SP.JUPITER_ROTATION_DURATION,
-            )
+        )
 
         # init Jupiter moon 1
         self.jupiter_moon1 = SolarObject(
@@ -146,8 +147,78 @@ class SolarSystem(avango.script.Script):
             ORBIT_DURATION = SP.JUPITER_MOON1_ORBIT_DURATION,
             ROTATION_INCLINATION = SP.JUPITER_MOON1_ROTATION_INCLINATION,
             ROTATION_DURATION = SP.JUPITER_MOON1_ROTATION_DURATION,
-            )
-                                                                            
+        )
+
+        # init Jupiter moon 2
+        self.jupiter_moon2 = SolarObject(
+            NAME = "jupiter_moon2",
+            TEXTURE_PATH = SP.JUPITER_MOON2_TEXTURE,
+            PARENT_NODE = self.jupiter.get_orbit_node(),
+            SF_TIME_SCALE = self.sf_time_scale_factor,
+            DIAMETER = SP.JUPITER_MOON2_DIAMETER,
+            ORBIT_RADIUS = SP.JUPITER_MOON2_ORBIT_RADIUS,
+            ORBIT_INCLINATION = SP.JUPITER_MOON2_ORBIT_INCLINATION,
+            ORBIT_DURATION = SP.JUPITER_MOON2_ORBIT_DURATION,
+            ROTATION_INCLINATION = SP.JUPITER_MOON2_ROTATION_INCLINATION,
+            ROTATION_DURATION = SP.JUPITER_MOON2_ROTATION_DURATION,
+        )
+
+        # init Jupiter moon 3
+        self.jupiter_moon3 = SolarObject(
+            NAME = "jupiter_moon3",
+            TEXTURE_PATH = SP.JUPITER_MOON3_TEXTURE,
+            PARENT_NODE = self.jupiter.get_orbit_node(),
+            SF_TIME_SCALE = self.sf_time_scale_factor,
+            DIAMETER = SP.JUPITER_MOON3_DIAMETER,
+            ORBIT_RADIUS = SP.JUPITER_MOON3_ORBIT_RADIUS,
+            ORBIT_INCLINATION = SP.JUPITER_MOON3_ORBIT_INCLINATION,
+            ORBIT_DURATION = SP.JUPITER_MOON3_ORBIT_DURATION,
+            ROTATION_INCLINATION = SP.JUPITER_MOON3_ROTATION_INCLINATION,
+            ROTATION_DURATION = SP.JUPITER_MOON3_ROTATION_DURATION,
+        )
+
+        # init Saturn
+        self.saturn = SolarObject(
+            NAME = "saturn",
+            TEXTURE_PATH = SP.SATURN_TEXTURE,
+            PARENT_NODE = self.jupiter.get_orbit_node(),
+            SF_TIME_SCALE = self.sf_time_scale_factor,
+            DIAMETER = SP.SATURN_DIAMETER,
+            ORBIT_RADIUS = SP.SATURN_ORBIT_RADIUS,
+            ORBIT_INCLINATION = SP.SATURN_ORBIT_INCLINATION,
+            ORBIT_DURATION = SP.SATURN_ORBIT_DURATION,
+            ROTATION_INCLINATION = SP.SATURN_ROTATION_INCLINATION,
+            ROTATION_DURATION = SP.SATURN_ROTATION_DURATION,
+        )
+
+        # init Uranus
+        self.uranus = SolarObject(
+            NAME = "uranus",
+            TEXTURE_PATH = SP.URANUS_TEXTURE,
+            PARENT_NODE = self.jupiter.get_orbit_node(),
+            SF_TIME_SCALE = self.sf_time_scale_factor,
+            DIAMETER = SP.URANUS_DIAMETER,
+            ORBIT_RADIUS = SP.URANUS_ORBIT_RADIUS,
+            ORBIT_INCLINATION = SP.URANUS_ORBIT_INCLINATION,
+            ORBIT_DURATION = SP.URANUS_ORBIT_DURATION,
+            ROTATION_INCLINATION = SP.URANUS_ROTATION_INCLINATION,
+            ROTATION_DURATION = SP.URANUS_ROTATION_DURATION,
+        )
+
+        # init Neptune
+        self.neptune = SolarObject(
+            NAME = "neptune",
+            TEXTURE_PATH = SP.NEPTUNE_TEXTURE,
+            PARENT_NODE = self.jupiter.get_orbit_node(),
+            SF_TIME_SCALE = self.sf_time_scale_factor,
+            DIAMETER = SP.NEPTUNE_DIAMETER,
+            ORBIT_RADIUS = SP.NEPTUNE_ORBIT_RADIUS,
+            ORBIT_INCLINATION = SP.NEPTUNE_ORBIT_INCLINATION,
+            ORBIT_DURATION = SP.NEPTUNE_ORBIT_DURATION,
+            ROTATION_INCLINATION = SP.NEPTUNE_ROTATION_INCLINATION,
+            ROTATION_DURATION = SP.NEPTUNE_ROTATION_DURATION,
+        )
+
         # init lightsource (only for sun)
         self.sun_light = avango.gua.nodes.LightNode(Name = "sun_light", Type = avango.gua.LightType.POINT)
         self.sun_light.Color.value = avango.gua.Color(1.0, 1.0, 1.0)
@@ -168,12 +239,12 @@ class SolarSystem(avango.script.Script):
     @field_has_changed(sf_key0)
     def sf_key0_changed(self):
         if self.sf_key0.value == True: # button pressed
-            _new_factor = self.sf_time_scale_factor.value * 1.5 # increase factor to 150% 
+            _new_factor = self.sf_time_scale_factor.value * 1.5 # increase factor to 150%
 
             self.set_time_scale_factor(_new_factor)
-      
+
     @field_has_changed(sf_key1)
-    def sf_key1_changed(self): 
+    def sf_key1_changed(self):
         if self.sf_key1.value == True: # button pressed
             _new_factor = self.sf_time_scale_factor.value * 0.5 # decrease factor to 50%
 
@@ -181,6 +252,5 @@ class SolarSystem(avango.script.Script):
 
 
     ### functions ###
-    def set_time_scale_factor(self, FLOAT): 
+    def set_time_scale_factor(self, FLOAT):
         self.sf_time_scale_factor.value = min(10000.0, max(1.0, FLOAT)) # clamp value to reasonable intervall
-        
