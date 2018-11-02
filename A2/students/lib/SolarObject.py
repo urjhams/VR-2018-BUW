@@ -38,7 +38,7 @@ class SolarObject:
         self.rotation_inclination = ROTATION_INCLINATION
 
         self.orbit_velocity = (1 / ORBIT_DURATION) if ORBIT_DURATION > 0 else 0.001
-        self.rotation_velocity = 0.001
+        self.rotation_velocity = (1 / ROTATION_DURATION) if ROTATION_DURATION > 0 else 0.001
         self.rotate_duration = ROTATION_DURATION
 
         ### resources ###
