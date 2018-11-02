@@ -159,11 +159,6 @@ class SolarSystem(avango.script.Script):
         self.sun_light.ShadowNearClippingInSunDirection.value = 0.1 / 50.0
         self.sun.get_orbit_node().Children.value.append(self.sun_light)
 
-
-        ## TODO: init planets and moons below here
-
-
-
     ### callback functions ###
     @field_has_changed(sf_key0)
     def sf_key0_changed(self):

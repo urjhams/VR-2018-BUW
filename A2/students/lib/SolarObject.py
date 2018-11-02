@@ -72,7 +72,7 @@ class SolarObject:
         # init transformation nodes for specific solar object aspects
 
         self.orbit_radius_node = avango.gua.nodes.TransformNode(Name = NAME + "_orbit_radius_node")
-       # self.orbit_radius_node.Children.value = [self.object_geometry]
+        # self.orbit_radius_node.Children.value = [self.object_geometry]
         self.orbit_radius_node.Transform.value = avango.gua.make_trans_mat(self.orbit_radius, 0.0, 0.0)
         #PARENT_NODE.Children.value.append(self.orbit_radius_node)
 
