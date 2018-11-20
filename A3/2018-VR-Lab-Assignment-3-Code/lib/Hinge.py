@@ -13,18 +13,16 @@ import math
 
 
 class Accumulator(avango.script.Script):
-
     ## declaration of fields        
-    sf_rot_input = avango.SFFloat()  
+    sf_rot_input = avango.SFFloat() 
     
     sf_mat = avango.gua.SFMatrix4()
     sf_mat.value = avango.gua.make_identity_mat() # initialize field with identity matrix
-
+    hinge_id = 0
 
     ## constructor
     def __init__(self):
         self.super(Accumulator).__init__() # call base-class constructor
-
 
     ## callback functions
     def evaluate(self):
@@ -32,7 +30,17 @@ class Accumulator(avango.script.Script):
         print("accum eval")
         
         # ToDo: accumulate rotation input here 
-        sf_rot_input = sf_rot_input + sf_rot_input
+        # 3.2
+        rot_mat = None;
+
+        # rotate around y axis for base, other wise x
+        if self.hinge_id == 0:
+            rot_mat = avango.gua.make_rot_mat(self.sf_rot_input.value, 0, 1, 0)
+            print("dmm")
+        else:
+            rot_mat = avango.gua.make_rot_mat(self.sf_rot_input.value, 0, 1, 0)
+
+        self.sf_mat.value = self.sf_mat.value * rot_mat
 
 
 class Constraint(avango.script.Script):
@@ -110,8 +118,12 @@ class Hinge:
         self.acc.sf_mat.value = self.hinge_node.Transform.value # consider (potential) rotation offset 
 
         # ToDo: init Constraint here
-        # ...
+        # 3.3
+        self.
 
         # ToDo: init field connections here
-        if SF_ROT_INPUT is not None:
-            self.acc.sf_rot_input.connect_weak_from(SF_ROT_INPUT.value)
+        # 3.2
+        # pass id to accumulator
+        self.acc.hinge_id = self.id
+        self.acc.sf_rot_input.connect_from(SF_ROT_INPUT)
+        self.hinge_node.Transform.connect_from(self.acc.sf_mat)

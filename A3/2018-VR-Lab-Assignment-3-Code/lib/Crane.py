@@ -29,6 +29,8 @@ class Crane:
 
         ## init internal sub-classes
         self.input = KeyboardInput()
+
+        # 3.1
                      
         ## first hinge
         self.hinge0 = Hinge(
@@ -59,9 +61,9 @@ class Crane:
         ## second arm segment
         self.arm1 = Arm(
             PARENT_NODE = self.hinge1.hinge_node,
-            LENGTH = 0.12,
+            LENGTH = 0.08,
             DIAMETER = 0.01,
-            ROT_OFFSET_MAT = avango.gua.make_identity_mat(),
+            ROT_OFFSET_MAT = avango.gua.make_rot_mat(90.0,0,0,1),
             )
 
         ## second hinge
@@ -69,23 +71,14 @@ class Crane:
             PARENT_NODE = self.arm1.arm_end_node,
             DIAMETER = 0.04,
             HEIGHT = 0.01,
-            ROT_OFFSET_MAT = avango.gua.make_rot_mat(90.0,1,0,0),
+            ROT_OFFSET_MAT = avango.gua.make_rot_mat(90.0,0,0,1),
             SF_ROT_INPUT = self.input.sf_rot_input2,
             )
-        
+            
         ## second arm segment
         self.arm2 = Arm(
             PARENT_NODE = self.hinge2.hinge_node,
-            LENGTH = 0.12,
+            LENGTH = 0.08,
             DIAMETER = 0.01,
-            ROT_OFFSET_MAT = avango.gua.make_identity_mat(),
-            )
-
-        ## second hinge
-        self.hinge3 = Hinge(
-            PARENT_NODE = self.arm2.arm_end_node,
-            DIAMETER = 0.04,
-            HEIGHT = 0.01,
-            ROT_OFFSET_MAT = avango.gua.make_rot_mat(90.0,1,0,0),
-            SF_ROT_INPUT = None,
-            )      
+            ROT_OFFSET_MAT = avango.gua.make_rot_mat(-90.0,0,0,1),
+            )   
