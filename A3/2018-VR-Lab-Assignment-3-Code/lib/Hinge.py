@@ -40,7 +40,7 @@ class Accumulator(avango.script.Script):
         else:
             rot_mat = avango.gua.make_rot_mat(self.sf_rot_input.value, 0, 1, 0)
 
-        self.sf_mat.value = self.sf_mat.value * rot_mat
+        self.sf_mat.value = self.sf_mat.value * avango.gua.make_rot_mat(self.sf_rot_input.value, 0, 1, 0)
 
 
 class Constraint(avango.script.Script):
@@ -48,6 +48,10 @@ class Constraint(avango.script.Script):
     ## declaration of fields    
     sf_mat = avango.gua.SFMatrix4()
     sf_mat.value = avango.gua.make_identity_mat() # initialize field with identity matrix
+    last_mat = avango.gua.SFMatrix4()
+    last_mat.value = avango.gua.make_identity_mat()
+    min_angle = -180
+    max_angle = 180
 
     ## constructor
     def __init__(self):
@@ -69,10 +73,17 @@ class Constraint(avango.script.Script):
         print("const eval")
       
         # check and apply rotation constraints
-        _head, _pitch, _roll = lib.Utilities.get_euler_angles(self.sf_mat.value)
+        _head, _pitch, _roll = lib.Utilities.get_euler_angles(self.sf_mat.value)    
+        print(_head)
+        print(_pitch)
+        print(_roll)
 
-        # ToDo: apply rotation constraints here        
-        # self.sf_mat.value = 
+        if _head < self.min_angle or _head > self.  max_angle:
+            self.sf_mat.value = self.last_mat.value
+        else:
+            self.last_mat.value = self.sf_mat.value
+
+        #self.sf_mat.value = 
 
 
 
@@ -90,6 +101,8 @@ class Hinge:
         HEIGHT = 0.1, # in meter
         ROT_OFFSET_MAT = avango.gua.make_identity_mat(), # the rotation offset relative to the parent coordinate system
         SF_ROT_INPUT = None,
+        MIN_ANGLE = -180,
+        MAX_ANGLE = 180,
         ):
 
         ## get unique id for this instance
@@ -117,13 +130,23 @@ class Hinge:
         self.acc = Accumulator()
         self.acc.sf_mat.value = self.hinge_node.Transform.value # consider (potential) rotation offset 
 
-        # ToDo: init Constraint here
-        # 3.3
-        self.
+        # page up. page down is reversed so we need to rotate this hinge by 180 around x axis to make the input right
+        if self.id == 2:
+            self.hinge_rot_offset_node.Transform.value = ROT_OFFSET_MAT * avango.gua.make_rot_mat(180, 1, 0, 0)
 
         # ToDo: init field connections here
         # 3.2
-        # pass id to accumulator
         self.acc.hinge_id = self.id
         self.acc.sf_rot_input.connect_from(SF_ROT_INPUT)
-        self.hinge_node.Transform.connect_from(self.acc.sf_mat)
+
+        # ToDo: init Constraint here
+        # 3.3
+        self.con = Constraint()
+        self.con.sf_mat.value = self.hinge_node.Transform.value
+        self.con.sf_mat.connect_from(self.acc.sf_mat)
+        self.acc.sf_mat.connect_weak_from(self.con.sf_mat)
+        self.con.min_angle = MIN_ANGLE
+        self.con.max_angle = MAX_ANGLE
+        self.hinge_node.Transform.connect_from(self.con.sf_mat)
+
+        # 3.4
