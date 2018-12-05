@@ -36,16 +36,13 @@ class ManipulationManager(avango.script.Script):
         TARGET_LIST = [],
         ):
         
-
         ### external references ###        
         self.SCENE_ROOT = SCENE_ROOT
         self.TARGET_LIST = TARGET_LIST
 
-
         ### variables ###
         self.dragged_objects_list = []
         self.lf_hand_mat = avango.gua.make_identity_mat() # last frame hand matrix
-
         
         ## init hand geometry
         _loader = avango.gua.nodes.TriMeshLoader() # init trimesh loader to load external meshes
@@ -63,10 +60,8 @@ class ManipulationManager(avango.script.Script):
         self.hand_transform.Children.value = [self.hand_geometry]
         PARENT_NODE.Children.value.append(self.hand_transform)
         self.hand_transform.Transform.connect_from(self.sf_hand_mat)
-        
 
         ### init sub-classes ###
-        
         ## init inputs
         self.mouseInput = MouseInput()
         self.mouseInput.my_constructor("gua-device-mouse")
@@ -185,22 +180,17 @@ class ManipulationManager(avango.script.Script):
                 _node.Material.value.set_uniform("Color", _node.CurrentColor.value) # switch to dragging material
                 self.dragged_objects_list.append(_node) # add node for dragging
 
-                ## TODO: add code if necessary
                 _node.DraggingOffsetMatrix.value = avango.gua.make_inverse_mat(_hand_mat) * _node.Transform.value
                 
 
     ## This function is called while the dragging button
     ## (e.g. mouse button for isotonic input) is pressed
     def object_dragging(self):
-
-        ## TODO: add code if necessary
         _hand_mat = self.hand_transform.WorldTransform.value
 
         for _node in self.dragged_objects_list:
             _node.Transform.value = _hand_mat * _node.DraggingOffsetMatrix.value
     
-
-  
 
     ## This function is called when the dragging button
     ## (e.g. mouse button for isotonic input) is released
@@ -210,9 +200,6 @@ class ManipulationManager(avango.script.Script):
             _node.CurrentColor.value = avango.gua.Vec4(0.0, 1.0, 0.0, 1.0)
             _node.Material.value.set_uniform("Color", _node.CurrentColor.value) # switch to highlight material
         self.dragged_objects_list = [] # clear list
-
-        ## TODO: add code if necessary
-
  
     ########################## End of Exercise 4.1
 
