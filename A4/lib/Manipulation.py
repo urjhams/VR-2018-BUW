@@ -401,7 +401,6 @@ class IsotonicPositionControlManipulation(Manipulation):
         _new_mat = self.clamp_matrix(_new_mat)
 
         self.sf_mat.value = _new_mat # apply new matrix to field
-    
 
     ## implement respective base-class function    
     def reset(self):
@@ -492,7 +491,6 @@ class ElasticPositionControlManipulation(Manipulation):     # key 2
         # init field connections
         self.mf_dof.connect_from(MF_DOF)
         self.mf_buttons.connect_from(MF_BUTTONS)
-
 
     ## implement respective base-class function
     def manipulate(self):
