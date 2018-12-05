@@ -433,9 +433,6 @@ class IsotonicRateControlManipulation(Manipulation):    # key 3
 
         if _x != 0 or _y != 0 or _z != 0:
             self.last_velocity = avango.gua.make_trans_mat(_x, _y, _z)
-            print(_x)
-            print(_y)
-            print(_z)
 
         self.sf_mat.value = self.last_velocity * self.sf_mat.value
     
@@ -470,11 +467,8 @@ class IsotonicAccelerationControlManipulation(Manipulation):    # key 5
             self.acceleration = avango.gua.make_trans_mat(_x, _y, _z)
 
         self.last_velocity = self.acceleration * self.last_velocity 
-
         self.sf_mat.value = self.last_velocity * self.sf_mat.value
         
-
-
     ## implement respective base-class function
     def reset(self):
         self.last_velocity = avango.gua.make_identity_mat()
@@ -502,7 +496,6 @@ class ElasticPositionControlManipulation(Manipulation):     # key 2
 
     ## implement respective base-class function
     def manipulate(self):
-        # TODO: add code
         scale = 0.01
         _x = self.mf_dof.value[0] * scale
         _y = self.mf_dof.value[1] * scale
@@ -517,7 +510,6 @@ class ElasticPositionControlManipulation(Manipulation):     # key 2
     
     ## implement respective base-class function
     def reset(self):
-        # TODO: add code
         self.sf_mat.value = avango.gua.make_identity_mat()
 
 
@@ -530,11 +522,8 @@ class ElasticRateControlManipulation(Manipulation):     # key 4
         self.mf_dof.connect_from(MF_DOF)
         self.mf_buttons.connect_from(MF_BUTTONS)
 
-
     ## implement respective base-class function
     def manipulate(self):
-
-         ## TODO: add code
         scale = 0.01
         _x = self.mf_dof.value[0] * scale
         _y = self.mf_dof.value[1] * scale
@@ -544,13 +533,12 @@ class ElasticRateControlManipulation(Manipulation):     # key 4
             self.last_velocity = avango.gua.make_trans_mat(_x, _y, _z)
 
         self.sf_mat.value = self.last_velocity * self.sf_mat.value
-
          
     ## implement respective base-class function
     def reset(self):
         self.last_velocity = avango.gua.make_identity_mat()
         self.sf_mat.value = avango.gua.make_identity_mat()
-        # TODO: add code
+
 
 
 class ElasticAccelerationControlManipulation(Manipulation):     # key 6
@@ -567,7 +555,6 @@ class ElasticAccelerationControlManipulation(Manipulation):     # key 6
 
     ## implement respective base-class function
     def manipulate(self): 
-        # TODO: add code
         scale = 0.001
         _x = self.mf_dof.value[0] * scale
         _y = self.mf_dof.value[1] * scale
@@ -579,10 +566,8 @@ class ElasticAccelerationControlManipulation(Manipulation):     # key 6
 
         self.sf_mat.value = self.last_velocity * self.sf_mat.value
              
-
     ## implement respective base-class function
     def reset(self):
-        # TODO: add code
         self.last_velocity = avango.gua.make_identity_mat()
         self.acceleration = avango.gua.make_identity_mat()
         self.sf_mat.value = avango.gua.make_identity_mat()
