@@ -419,14 +419,54 @@ class DepthRay(ManipulationTechnique):
         self.ray_geometry.Material.value.set_uniform("Color", avango.gua.Vec4(1.0,0.0,0.0,1.0))
         self.pointer_node.Children.value.append(self.ray_geometry)
 
-
         self.depth_marker_geometry = _loader.create_geometry_from_file("intersection_geometry", "data/objects/sphere.obj", avango.gua.LoaderFlags.DEFAULTS)
         self.depth_marker_geometry.Material.value.set_uniform("Color", avango.gua.Vec4(1.0,0.0,0.0,1.0))
         self.depth_marker_geometry.Transform.value = avango.gua.make_trans_mat(0.0,0.0, self.ray_length / 20) * avango.gua.make_scale_mat(self.depth_marker_size)
         self.pointer_node.Children.value.append(self.depth_marker_geometry)
+        self.previous_angle = 0
 
     def update_ray_visualization(self, PICK_WORLD_POS = None, PICK_DISTANCE = 0.0):
-        self.depth_marker_geometry.Transform.value = avango.gua.make_trans_mat(0.0,0.0, 0.01 * self.get_roll_angle(self.pointer_node.WorldTransform.value)) * self.depth_marker_geometry.Transform.value
+        temp = self.previous_angle
+        self.previous_angle = self.get_roll_angle(self.pointer_node.WorldTransform.value)
+        self.depth_marker_geometry.Transform.value = avango.gua.make_trans_mat(0.0, 0.0, 0.01 * (self.previous_angle - temp)) * self.depth_marker_geometry.Transform.value 
+
+    def selection(self):
+        if len(self.mf_pick_result.value) > 0:       
+            marker_distance = self.pointer_node.WorldTransform.value.get_translate().distance_to(self.depth_marker_geometry.WorldTransform.value.get_translate())
+            min_dist = -1
+
+            for result in self.mf_pick_result.value:                
+                dist = marker_distance - result.Distance.value * self.ray_length
+
+                if dist < 0:
+                    dist = dist * -1
+                print(marker_distance, dist)
+
+                if min_dist == -1 or dist < min_dist:
+                    min_dist = dist
+                    self.pick_result = result
+
+        else: # nothing hit
+            self.pick_result = None
+
+        # remove highlighting of previous selection
+        if self.selected_node is not None:
+            for child in self.selected_node.Children.value:
+                if child.get_type() == 'av::gua::TriMeshNode':
+                    child.Material.value.set_uniform("enable_color_override", False)
+
+        if self.pick_result is not None: # something was hit
+            self.selected_node = self.pick_result.Object.value.Parent.value # take the parent node of the geomtry node (the whole object)
+
+        else:
+            self.selected_node = None
+
+        ## enable node highlighting
+        if self.selected_node is not None:
+            for _child_node in self.selected_node.Children.value:
+                if _child_node.get_type() == 'av::gua::TriMeshNode':
+                    _child_node.Material.value.set_uniform("enable_color_override", True)
+                    _child_node.Material.value.set_uniform("override_color", avango.gua.Vec4(1.0,0.0,0.0,0.3)) # 30% color override
 
     ### callback functions ###
     def evaluate(self): # implement respective base-class function
@@ -435,6 +475,13 @@ class DepthRay(ManipulationTechnique):
 
         ## To-Do: implement depth ray technique here
         
+        ManipulationTechnique.update_intersection(self, PICK_MAT = self.pointer_node.WorldTransform.value, PICK_LENGTH = self.ray_length)
+
+        self.selection()
+        self.update_ray_visualization()
+        
+        ## possibly perform object dragging
+        ManipulationTechnique.dragging(self) # call base-class function
 
 
 class GoGo(ManipulationTechnique):
