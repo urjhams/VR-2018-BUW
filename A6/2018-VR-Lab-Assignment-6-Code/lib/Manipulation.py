@@ -92,8 +92,6 @@ class ManipulationManager(avango.script.Script):
             next_index = (self.active_manipulation_technique_index + 1) % 4
             self.set_manipulation_technique(next_index) # switch to Ray manipulation technique
 
-
-
 class ManipulationTechnique(avango.script.Script):
 
     ## input fields
@@ -102,7 +100,6 @@ class ManipulationTechnique(avango.script.Script):
     ## constructor
     def __init__(self):
         self.super(ManipulationTechnique).__init__()
-               
 
     def my_constructor(self,
         SCENEGRAPH = None,
@@ -114,15 +111,14 @@ class ManipulationTechnique(avango.script.Script):
         ### external references ###
         self.SCENEGRAPH = SCENEGRAPH
         self.POINTER_INPUT = POINTER_INPUT
-            
-            
+        
         ### variables ###
         self.enable_flag = False
         
         self.selected_node = None
         self.dragged_node = None
         self.dragging_offset_mat = avango.gua.make_identity_mat()
-                
+        
         self.mf_pick_result = []
         self.pick_result = None # chosen pick result
         self.white_list = []   
@@ -140,8 +136,6 @@ class ManipulationTechnique(avango.script.Script):
                             | avango.gua.PickingOptions.GET_NORMALS \
                             | avango.gua.PickingOptions.GET_WORLD_POSITIONS \
                             | avango.gua.PickingOptions.GET_WORLD_NORMALS
-
-
 
         ### resources ###
 
@@ -171,12 +165,10 @@ class ManipulationTechnique(avango.script.Script):
             
             self.pointer_node.Tags.value = ["invisible"] # set tool invisible
 
-       
     def start_dragging(self, NODE):
         self.dragged_node = NODE        
         self.dragging_offset_mat = avango.gua.make_inverse_mat(self.pointer_node.WorldTransform.value) * self.dragged_node.WorldTransform.value # object transformation in pointer coordinate system
 
-  
     def stop_dragging(self): 
         self.dragged_node = None
         self.dragging_offset_mat = avango.gua.make_identity_mat()
@@ -195,7 +187,7 @@ class ManipulationTechnique(avango.script.Script):
         _dir_vec = avango.gua.Vec3(_dir_vec.x, _dir_vec.y, _dir_vec.z) # cast to Vec3
         
         _ref_side_vec = avango.gua.Vec3(1.0,0.0,0.0)
-   
+
         _up_vec = _dir_vec.cross(_ref_side_vec)
         _up_vec.normalize()
         _ref_side_vec = _up_vec.cross(_dir_vec)
@@ -230,8 +222,6 @@ class ManipulationTechnique(avango.script.Script):
         ## trimesh intersection
         self.mf_pick_result = self.SCENEGRAPH.ray_test(self.ray, self.pick_options, self.white_list, self.black_list)
 
-   
-   
     def selection(self):
         if len(self.mf_pick_result.value) > 0: # intersection found
             self.pick_result = self.mf_pick_result.value[0] # get first pick result
@@ -383,14 +373,11 @@ class Ray(ManipulationTechnique):
         ## possibly perform object dragging
         ManipulationTechnique.dragging(self) # call base-class function
 
-
-
 class DepthRay(ManipulationTechnique):
 
     ## constructor
     def __init__(self):
         self.super(DepthRay).__init__()
-
 
     def my_constructor(self,
         SCENEGRAPH = None,
@@ -405,7 +392,6 @@ class DepthRay(ManipulationTechnique):
         self.ray_length = 2.5 # in meter
         self.ray_thickness = 0.01 # in meter
         self.depth_marker_size = 0.03
-
         
         ### resources ###
 
@@ -488,7 +474,6 @@ class GoGo(ManipulationTechnique):
     def __init__(self):
         self.super(GoGo).__init__()
 
-
     def my_constructor(self,
         SCENEGRAPH = None,
         NAVIGATION_NODE = None,
@@ -498,19 +483,22 @@ class GoGo(ManipulationTechnique):
 
         ManipulationTechnique.my_constructor(self, SCENEGRAPH, NAVIGATION_NODE, POINTER_INPUT) # call base class constructor
 
-
         ### external references ###
         self.HEAD_NODE = HEAD_NODE
-        
 
         ### parameters ###  
         self.intersection_point_size = 0.03 # in meter
         self.gogo_threshold = 0.35 # in meter
 
         ### resources ###
- 
+        _loader = avango.gua.nodes.TriMeshLoader()
+
         ## To-Do: init (geometry) nodes here
- 
+        self.hand_geometry = _loader.create_geometry_from_file("hand_geometry", "data/objects/hand.obj", avango.gua.loaderFlags.DEFAULTS)
+        self.hand_geometry.Transform.value = avango.gua.make_trans_mat(0, 0, 0)
+        self.hand_geometry.Material.value.set_uniform("Color", avango.gua.Vec4(1.0, 1.0, 0.0, 1.0))
+        self.pointer_node.Children.value.append(self.hand_geometry)
+
         ### set initial states ###
         _loader = avango.gua.nodes.TriMeshLoader()
         self.hand_geometry = _loader.create_geometry_from_file("hand_geometry", "data/objects/hand.obj", avango.gua.LoaderFlags.DEFAULTS)
@@ -518,6 +506,7 @@ class GoGo(ManipulationTechnique):
         self.pointer_node.Children.value.append(self.hand_geometry)
         self.enable(False)
 
+<<<<<<< HEAD
     def update_hand_visualization(self):
         # get z
         pointer_head_offset = (self.pointer_node.WorldTransform.value * avango.gua.make_inverse_mat(self.HEAD_NODE.WorldTransform.value)).get_translate()
@@ -557,13 +546,11 @@ class GoGo(ManipulationTechnique):
         ManipulationTechnique.update_intersection(self, PICK_MAT = self.hand_geometry.WorldTransform.value, PICK_LENGTH = 0.2) # call base-class function
         ManipulationTechnique.selection(self) # call base-class function
         ManipulationTechnique.dragging(self) # call base-class function
-            
 
 class VirtualHand(ManipulationTechnique):
     ## constructor
     def __init__(self):
         self.super(ManipulationTechnique).__init__()
-
 
     def my_constructor(self,
         SCENEGRAPH = None,
@@ -572,7 +559,6 @@ class VirtualHand(ManipulationTechnique):
         ):
 
         ManipulationTechnique.my_constructor(self, SCENEGRAPH, NAVIGATION_NODE, POINTER_INPUT) # call base-class constructor
-
 
         ### parameters ###
         self.intersection_point_size = 0.03 # in meter
@@ -584,7 +570,7 @@ class VirtualHand(ManipulationTechnique):
 
         ### resources ###
 
-        ## To-Do: init (geometry) nodes here        
+        ## To-Do: init (geometry) nodes here   
         _loader = avango.gua.nodes.TriMeshLoader()
         self.hand_geometry = _loader.create_geometry_from_file("hand_geometry", "data/objects/hand.obj", avango.gua.LoaderFlags.DEFAULTS)
         self.hand_geometry.Material.value.set_uniform("Color", avango.gua.Vec4(0.0,0.0,1.0,1.0))
@@ -660,5 +646,4 @@ class VirtualHand(ManipulationTechnique):
         self.update_hand_visualization()
         ManipulationTechnique.update_intersection(self, PICK_MAT = self.hand_geometry.WorldTransform.value, PICK_LENGTH = 0.2) # call base-class function
         ManipulationTechnique.selection(self) # call base-class function
-        ManipulationTechnique.dragging(self) # call base-class function
-        
+        ManipulationTechnique.dragging(self) # call base-class function    
