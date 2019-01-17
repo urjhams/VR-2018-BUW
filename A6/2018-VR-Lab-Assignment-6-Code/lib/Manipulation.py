@@ -505,8 +505,7 @@ class GoGo(ManipulationTechnique):
         self.hand_geometry.Material.value.set_uniform("Color", avango.gua.Vec4(0.0,0.0,1.0,1.0))
         self.pointer_node.Children.value.append(self.hand_geometry)
         self.enable(False)
-
-<<<<<<< HEAD
+        
     def update_hand_visualization(self):
         # get z
         pointer_head_offset = (self.pointer_node.WorldTransform.value * avango.gua.make_inverse_mat(self.HEAD_NODE.WorldTransform.value)).get_translate()
