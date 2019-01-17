@@ -497,33 +497,26 @@ class GoGo(ManipulationTechnique):
         self.pointer_node.Children.value.append(self.hand_geometry)
         self.enable(False)
 
+    def get_offset(self, input_offset):
+        abs_offset = abs(input_offset)
+
+        if abs_offset > self.gogo_threshold:            
+            dif = abs_offset - self.gogo_threshold
+            change = dif * dif
+
+            if input_offset < 0:
+                input_offset = input_offset - change
+            else:
+                input_offset = input_offset + change
+
+        return input_offset
+
     def update_hand_visualization(self):
         # get z
         pointer_head_offset = (self.pointer_node.WorldTransform.value * avango.gua.make_inverse_mat(self.HEAD_NODE.WorldTransform.value)).get_translate()
-        x = pointer_head_offset.x
-        y = pointer_head_offset.y
-        z = pointer_head_offset.z            
-        abs_z = abs(z)
-
-        if abs_z > self.gogo_threshold:
-            dif = abs_z - self.gogo_threshold
-            change = dif * dif
-
-            if x < 0:
-                x = x - change
-            else:
-                x = x + change
-
-            if y < 0:
-                y = y - change
-            else:
-                y = y + change
-
-            if z < 0:
-                z = z - change
-            else:
-                z = z + change
-
+        x = self.get_offset(pointer_head_offset.x)        
+        y = self.get_offset(pointer_head_offset.y)
+        z = self.get_offset(pointer_head_offset.z)
         self.hand_geometry.Transform.value = avango.gua.make_trans_mat(x, y, z)
 
     ### callback functions ###
@@ -576,7 +569,7 @@ class VirtualHand(ManipulationTechnique):
         self.y_frame_over_max = 0
         self.z_frame_over_max = 0
         self.enable(False)
-
+        
     def update_hand_visualization(self):
         temp = self.previous_pointer_position
         self.previous_pointer_position = self.pointer_node.Transform.value
@@ -592,7 +585,7 @@ class VirtualHand(ManipulationTechnique):
         if x_speed > self.min_vel:
             if x_speed < self.sc_vel:
                 self.x_frame_over_max = 0
-                x_offset = x_dist * self.sc_vel / x_speed
+                self.x_offset = x_dist * self.sc_vel / x_speed
             else:
                 if self.x_frame_over_max < self.clear_offset_frame:
                     self.x_offset = self.x_offset * self.clear_offset_factor
@@ -605,7 +598,7 @@ class VirtualHand(ManipulationTechnique):
         if y_speed > self.min_vel:
             if y_speed < self.sc_vel:
                 self.y_frame_over_max = 0
-                y_offset = y_dist * self.sc_vel / y_speed
+                self.y_offset = y_dist * self.sc_vel / y_speed
             else:
                 if self.y_frame_over_max < self.clear_offset_frame:
                     self.y_offset = self.y_offset * self.clear_offset_factor
@@ -618,7 +611,7 @@ class VirtualHand(ManipulationTechnique):
         if z_speed > self.min_vel:
             if z_speed < self.sc_vel:
                 self.z_frame_over_max = 0
-                z_offset = z_dist * self.sc_vel / z_speed
+                self.z_offset = z_dist * self.sc_vel / z_speed
             else:
                 if self.z_frame_over_max < self.clear_offset_frame:
                     self.z_offset = self.z_offset * self.clear_offset_factor
