@@ -10,6 +10,7 @@ import avango.daemon
 ### import python libraries ###
 import math
 import sys
+import matplotlib.pyplot as plt
 
 
 class ManipulationManager(avango.script.Script):
@@ -469,7 +470,6 @@ class DepthRay(ManipulationTechnique):
 
 
 class GoGo(ManipulationTechnique):
-
     ## constructor
     def __init__(self):
         self.super(GoGo).__init__()
@@ -493,9 +493,20 @@ class GoGo(ManipulationTechnique):
         ### resources ###
         _loader = avango.gua.nodes.TriMeshLoader()
         self.hand_geometry = _loader.create_geometry_from_file("hand_geometry", "data/objects/hand.obj", avango.gua.LoaderFlags.DEFAULTS)
-        self.hand_geometry.Material.value.set_uniform("Color", avango.gua.Vec4(0.0,0.0,1.0,1.0))
-        self.pointer_node.Children.value.append(self.hand_geometry)
+        self.hand_geometry.Material.value.set_uniform("Color", avango.gua.Vec4(0.0, 0.0, 1.0, 1.0))
+        self.pointer_node.Children.value.append(self.hand_geometry)        
         self.enable(False)
+
+        # plot function
+        x = []
+        y = []
+
+        for i in range(1, 50):
+            x[i] = i
+            y[i] = self.get_offset(i)
+
+        plt.plot(x, y)
+        plt.show()
 
     def get_offset(self, input_offset):
         abs_offset = abs(input_offset)
@@ -512,7 +523,6 @@ class GoGo(ManipulationTechnique):
         return input_offset
 
     def update_hand_visualization(self):
-        # get z
         pointer_head_offset = (self.pointer_node.WorldTransform.value * avango.gua.make_inverse_mat(self.HEAD_NODE.WorldTransform.value)).get_translate()
         x = self.get_offset(pointer_head_offset.x)        
         y = self.get_offset(pointer_head_offset.y)
@@ -556,6 +566,13 @@ class VirtualHand(ManipulationTechnique):
 
         ## To-Do: init (geometry) nodes here   
         _loader = avango.gua.nodes.TriMeshLoader()
+
+        # add a ball to keep track of the pointer location
+        self.ball = _loader.create_geometry_from_file("intersection_geometry", "data/objects/sphere.obj", avango.gua.LoaderFlags.DEFAULTS)
+        self.ball.Material.value.set_uniform("Color", avango.gua.Vec4(1.0,0.0,0.0,1.0))
+        self.ball.Transform.value = avango.gua.make_trans_mat(0.0,0.0, self.ray_length / 10) * avango.gua.make_scale_mat(self.depth_marker_size)
+        self.pointer_node.Children.value.append(self.ball)
+
         self.hand_geometry = _loader.create_geometry_from_file("hand_geometry", "data/objects/hand.obj", avango.gua.LoaderFlags.DEFAULTS)
         self.hand_geometry.Material.value.set_uniform("Color", avango.gua.Vec4(0.0,0.0,1.0,1.0))
         self.pointer_node.Children.value.append(self.hand_geometry)
@@ -569,7 +586,7 @@ class VirtualHand(ManipulationTechnique):
         self.y_frame_over_max = 0
         self.z_frame_over_max = 0
         self.enable(False)
-        
+
     def update_hand_visualization(self):
         temp = self.previous_pointer_position
         self.previous_pointer_position = self.pointer_node.Transform.value
