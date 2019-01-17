@@ -431,16 +431,14 @@ class DepthRay(ManipulationTechnique):
         self.depth_marker_geometry.Transform.value = avango.gua.make_trans_mat(0.0, 0.0, 0.01 * (self.previous_angle - temp)) * self.depth_marker_geometry.Transform.value 
 
     def selection(self):
-        if len(self.mf_pick_result.value) > 0:       
+        # get intersection closest to the marker
+        if len(self.mf_pick_result.value) > 0:      
+            # distance from marker to pointer 
             marker_distance = self.pointer_node.WorldTransform.value.get_translate().distance_to(self.depth_marker_geometry.WorldTransform.value.get_translate())
             min_dist = -1
 
             for result in self.mf_pick_result.value:                
-                dist = marker_distance - result.Distance.value * self.ray_length
-
-                if dist < 0:
-                    dist = dist * -1
-                print(marker_distance, dist)
+                dist = abs(marker_distance - result.Distance.value * self.ray_length)
 
                 if min_dist == -1 or dist < min_dist:
                     min_dist = dist
@@ -509,27 +507,59 @@ class GoGo(ManipulationTechnique):
         self.intersection_point_size = 0.03 # in meter
         self.gogo_threshold = 0.35 # in meter
 
-
         ### resources ###
  
         ## To-Do: init (geometry) nodes here
  
         ### set initial states ###
+        _loader = avango.gua.nodes.TriMeshLoader()
+        self.hand_geometry = _loader.create_geometry_from_file("hand_geometry", "data/objects/hand.obj", avango.gua.LoaderFlags.DEFAULTS)
+        self.hand_geometry.Material.value.set_uniform("Color", avango.gua.Vec4(0.0,0.0,1.0,1.0))
+        self.pointer_node.Children.value.append(self.hand_geometry)
         self.enable(False)
 
+    def update_hand_visualization(self):
+        # get z
+        pointer_head_offset = (self.pointer_node.WorldTransform.value * avango.gua.make_inverse_mat(self.HEAD_NODE.WorldTransform.value)).get_translate()
+        x = pointer_head_offset.x
+        y = pointer_head_offset.y
+        z = pointer_head_offset.z            
+        abs_z = abs(z)
 
+        if abs_z > self.gogo_threshold:
+            dif = abs_z - self.gogo_threshold
+            change = dif * dif
+
+            if x < 0:
+                x = x - change
+            else:
+                x = x + change
+
+            if y < 0:
+                y = y - change
+            else:
+                y = y + change
+
+            if z < 0:
+                z = z - change
+            else:
+                z = z + change
+
+        self.hand_geometry.Transform.value = avango.gua.make_trans_mat(x, y, z)
 
     ### callback functions ###
     def evaluate(self): # implement respective base-class function
         if self.enable_flag == False:
             return
 
-        ## To-Do: implement Go-Go technique here
+        self.update_hand_visualization()
 
+        ManipulationTechnique.update_intersection(self, PICK_MAT = self.hand_geometry.WorldTransform.value, PICK_LENGTH = 0.2) # call base-class function
+        ManipulationTechnique.selection(self) # call base-class function
+        ManipulationTechnique.dragging(self) # call base-class function
             
 
 class VirtualHand(ManipulationTechnique):
-
     ## constructor
     def __init__(self):
         self.super(ManipulationTechnique).__init__()
@@ -550,15 +580,76 @@ class VirtualHand(ManipulationTechnique):
         self.min_vel = 0.01 / 60.0 # in meter/sec
         self.sc_vel = 0.15 / 60.0 # in meter/sec
         self.max_vel = 0.25 / 60.0 # in meter/sec
-
+        self.clear_offset_frame = 60
 
         ### resources ###
 
         ## To-Do: init (geometry) nodes here        
+        _loader = avango.gua.nodes.TriMeshLoader()
+        self.hand_geometry = _loader.create_geometry_from_file("hand_geometry", "data/objects/hand.obj", avango.gua.LoaderFlags.DEFAULTS)
+        self.hand_geometry.Material.value.set_uniform("Color", avango.gua.Vec4(0.0,0.0,1.0,1.0))
+        self.pointer_node.Children.value.append(self.hand_geometry)
 
-        ### set initial states ###
+        ### set initial states ### 
+        self.previous_pointer_position = self.pointer_node.Transform.value
+        self.x_offset = 0
+        self.y_offset = 0
+        self.z_offset = 0
+        self.x_frame_over_max = 0
+        self.y_frame_over_max = 0
+        self.z_frame_over_max = 0
         self.enable(False)
 
+    def update_hand_visualization(self):
+        temp = self.previous_pointer_position
+        self.previous_pointer_position = self.pointer_node.Transform.value
+        x_dist = abs(self.previous_pointer_position.get_translate().x - temp.get_translate().x)
+        y_dist = abs(self.previous_pointer_position.get_translate().y - temp.get_translate().y)
+        z_dist = abs(self.previous_pointer_position.get_translate().z - temp.get_translate().z)
+        x_speed = x_dist / 60
+        y_speed = y_dist / 60
+        z_speed = z_dist / 60
+
+        if x_speed > self.min_vel:
+            if x_speed < self.sc_vel:
+                self.x_frame_over_max = 0
+                x_offset = x_dist * self.sc_vel / x_speed
+            else:
+                if self.x_frame_over_max < self.clear_offset_frame:
+                    self.x_offset = self.x_offset * 0.5
+                else:
+                    self.x_offset = 0
+                ++self.x_frame_over_max                
+        else:            
+            self.x_frame_over_max = 0
+
+        if y_speed > self.min_vel:
+            if y_speed < self.sc_vel:
+                self.y_frame_over_max = 0
+                y_offset = y_dist * self.sc_vel / y_speed
+            else:
+                if self.y_frame_over_max < self.clear_offset_frame:
+                    self.y_offset = self.y_offset * 0.5
+                else:
+                    self.y_offset = 0
+                ++self.y_frame_over_max                
+        else:            
+            self.y_frame_over_max = 0
+
+        if z_speed > self.min_vel:
+            if z_speed < self.sc_vel:
+                self.z_frame_over_max = 0
+                z_offset = z_dist * self.sc_vel / z_speed
+            else:
+                if self.z_frame_over_max < self.clear_offset_frame:
+                    self.z_offset = self.z_offset * 0.5
+                else:
+                    self.z_offset = 0
+                ++self.z_frame_over_max                
+        else:            
+            self.z_frame_over_max = 0
+
+        self.hand_geometry.Transform.value = avango.gua.make_trans_mat(self.x_offset, self.y_offset, self.z_offset)
 
     ### callback functions ###
     def evaluate(self): # implement respective base-class function
@@ -566,4 +657,8 @@ class VirtualHand(ManipulationTechnique):
             return
 
         ## To-Do: implement Virtual Hand (with PRISM filter) technique here
+        self.update_hand_visualization()
+        ManipulationTechnique.update_intersection(self, PICK_MAT = self.hand_geometry.WorldTransform.value, PICK_LENGTH = 0.2) # call base-class function
+        ManipulationTechnique.selection(self) # call base-class function
+        ManipulationTechnique.dragging(self) # call base-class function
         
