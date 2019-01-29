@@ -492,6 +492,13 @@ class GoGo(ManipulationTechnique):
 
         ### resources ###
         _loader = avango.gua.nodes.TriMeshLoader()
+
+        # add a ball to keep track of the pointer location
+        self.ball = _loader.create_geometry_from_file("intersection_geometry", "data/objects/sphere.obj", avango.gua.LoaderFlags.DEFAULTS)
+        self.ball.Material.value.set_uniform("Color", avango.gua.Vec4(1.0,0.0,0.0,1.0))
+        self.ball.Transform.value = avango.gua.make_trans_mat(0.0,0.0, 2.5) * avango.gua.make_scale_mat(0.05)
+        self.pointer_node.Children.value.append(self.ball)
+
         self.hand_geometry = _loader.create_geometry_from_file("hand_geometry", "data/objects/hand.obj", avango.gua.LoaderFlags.DEFAULTS)
         self.hand_geometry.Material.value.set_uniform("Color", avango.gua.Vec4(0.0, 0.0, 1.0, 1.0))
         self.pointer_node.Children.value.append(self.hand_geometry)        
@@ -501,33 +508,30 @@ class GoGo(ManipulationTechnique):
         x = []
         y = []
 
-        for i in range(1, 50):
-            x[i] = i
-            y[i] = self.get_offset(i)
+        for i in range(0, 50):
+            value = i / 100
+            x.append(value)
+            y.append(self.get_offset(value))
 
         plt.plot(x, y)
-        plt.show()
+        #plt.show()
 
-    def get_offset(self, input_offset):
-        abs_offset = abs(input_offset)
+    def get_offset(self, distance):
+        offset = distance - self.gogo_threshold 
 
-        if abs_offset > self.gogo_threshold:            
-            dif = abs_offset - self.gogo_threshold
-            change = dif * dif
+        if distance > self.gogo_threshold:
+            offset = offset + 0.5 * offset * offset
+            self.hand_geometry.Transform.value = avango.gua.make_trans_mat(0.0,0.0, -offset)
+        else:
+            self.hand_geometry.Transform.value = avango.gua.make_trans_mat(0.0,0.0, offset)
 
-            if input_offset < 0:
-                input_offset = input_offset - change
-            else:
-                input_offset = input_offset + change
-
-        return input_offset
+        return offset
 
     def update_hand_visualization(self):
-        pointer_head_offset = (self.pointer_node.WorldTransform.value * avango.gua.make_inverse_mat(self.HEAD_NODE.WorldTransform.value)).get_translate()
-        x = self.get_offset(pointer_head_offset.x)        
-        y = self.get_offset(pointer_head_offset.y)
-        z = self.get_offset(pointer_head_offset.z)
-        self.hand_geometry.Transform.value = avango.gua.make_trans_mat(x, y, z)
+        distance = self.pointer_node.WorldTransform.value.get_translate().distance_to(self.HEAD_NODE.WorldTransform.value.get_translate())
+        print("distance: ", distance)
+        print("offset: ", self.get_offset(distance))
+        self.hand_geometry.Transform.value = avango.gua.make_trans_mat(0.0, 0.0, -self.get_offset(distance))
 
     ### callback functions ###
     def evaluate(self): # implement respective base-class function
@@ -570,7 +574,7 @@ class VirtualHand(ManipulationTechnique):
         # add a ball to keep track of the pointer location
         self.ball = _loader.create_geometry_from_file("intersection_geometry", "data/objects/sphere.obj", avango.gua.LoaderFlags.DEFAULTS)
         self.ball.Material.value.set_uniform("Color", avango.gua.Vec4(1.0,0.0,0.0,1.0))
-        self.ball.Transform.value = avango.gua.make_trans_mat(0.0,0.0, self.ray_length / 10) * avango.gua.make_scale_mat(self.depth_marker_size)
+        self.ball.Transform.value = avango.gua.make_trans_mat(0.0,0.0, 2.5) * avango.gua.make_scale_mat(0.05)
         self.pointer_node.Children.value.append(self.ball)
 
         self.hand_geometry = _loader.create_geometry_from_file("hand_geometry", "data/objects/hand.obj", avango.gua.LoaderFlags.DEFAULTS)
@@ -590,14 +594,15 @@ class VirtualHand(ManipulationTechnique):
     def update_hand_visualization(self):
         temp = self.previous_pointer_position
         self.previous_pointer_position = self.pointer_node.Transform.value
+        print(self.pointer_node.Transform.value.get_translate())
         x_dist = abs(self.previous_pointer_position.get_translate().x - temp.get_translate().x)
         y_dist = abs(self.previous_pointer_position.get_translate().y - temp.get_translate().y)
         z_dist = abs(self.previous_pointer_position.get_translate().z - temp.get_translate().z)
         x_speed = x_dist / 60
         y_speed = y_dist / 60
         z_speed = z_dist / 60
-        print(x_dist, y_dist, z_dist)
-        print(x_speed, y_speed, z_speed)
+        #print(x_dist, y_dist, z_dist)
+        #print(x_speed, y_speed, z_speed)
 
         if x_speed > self.min_vel:
             if x_speed < self.sc_vel:
