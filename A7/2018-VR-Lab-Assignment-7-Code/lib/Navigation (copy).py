@@ -171,6 +171,7 @@ class NavigationManager(avango.script.Script):
 
 
     def update_ray_visualization(self):
+        print(self.pick_result.WorldPosition.value)
         if self.pick_result is not None: # something hit            
             _pick_world_pos = self.pick_result.WorldPosition.value # pick position in world coordinate system    
             _distance = self.pick_result.Distance.value * self.ray_length # pick distance in ray coordinate system        
@@ -294,12 +295,11 @@ class SteeringNavigation(NavigationTechnique):
         if self.enable_flag == False:
             return        
 
-
         ## handle translation input
         _x = self.mf_dof.value[0]
         _y = self.mf_dof.value[1]
         _z = self.mf_dof.value[2]
-        
+
         _trans_vec = avango.gua.Vec3(_x, _y, _z)
         _trans_input = _trans_vec.length()
         #print(_trans_input)

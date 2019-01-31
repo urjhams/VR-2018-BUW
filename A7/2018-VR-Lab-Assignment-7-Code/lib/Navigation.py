@@ -369,7 +369,8 @@ class TeleportNavigation(NavigationTechnique):
 
         self.always_evaluate(True) # change global evaluation policy
 
-
+        self.button_pressed = False
+        self.NAVIGATION_MANAGER.ray_geometry.Tags.value.remove("invisible")        
 
     ### callback functions ###
     def evaluate(self): # implement respective base-class function
@@ -377,8 +378,21 @@ class TeleportNavigation(NavigationTechnique):
             return
 
         ## To-Do: realize Teleport navigation here
-        if self.sf_pointer_button == True:
-            self.NAVIGATION_MANAGER.set_navigation_matrix(self.NAVIGATION_MANAGER.intersection_geometry.WorldTransform)
+        self.NAVIGATION_MANAGER.calc_pick_result()
+        self.NAVIGATION_MANAGER.update_ray_visualization()
+
+        # prevent multiple teleports on single press
+        if self.sf_pointer_button.value == True:
+            if self.button_pressed == False:
+                self.button_pressed = True
+                # keep current rotation of navigation
+                rotation = avango.gua.make_rot_mat(self.NAVIGATION_MANAGER.VIEWING_SETUP.navigation_node.WorldTransform.value.get_rotate())
+                translation_vec = self.NAVIGATION_MANAGER.intersection_geometry.WorldTransform.value.get_translate()
+                translation_mat = avango.gua.make_trans_mat(translation_vec.x, translation_vec.y, translation_vec.z) #* rotation
+                self.NAVIGATION_MANAGER.set_navigation_matrix(translation_mat)
+        else:
+            self.button_pressed = False
+
 
 
 class NavidgetNavigation(NavigationTechnique):
@@ -401,12 +415,33 @@ class NavidgetNavigation(NavigationTechnique):
 
         ### parameters ###
         self.navidget_duration = 3.0 # in seconds
-
+        self.sphere_scale = 20
+        self.ray_length = 25.0 # in meter
+        self.ray_thickness = 0.015 # in meter
 
         self.sf_pointer_button.connect_from(self.NAVIGATION_MANAGER.INPUTS.sf_pointer_button)
 
         self.always_evaluate(True) # change global evaluation policy
 
+        self.button_pressed = False
+        self.sphere_origin = None
+
+        _loader = avango.gua.nodes.TriMeshLoader()
+
+        # sphere
+        self.sphere = _loader.create_geometry_from_file("sphere", "data/objects/sphere.obj", avango.gua.LoaderFlags.DEFAULTS)
+        self.sphere.Material.value.set_uniform("Color", avango.gua.Vec4(0.0, 1.0, 0.0, 0.2))
+        SCENEGRAPH.Root.value.Children.value.append(self.sphere)
+
+        # camera
+        self.camera = _loader.create_geometry_from_file("camera", "data/objects/camera.obj", avango.gua.LoaderFlags.DEFAULTS)
+        SCENEGRAPH.Root.value.Children.value.append(self.camera)
+
+        # camera ray
+        self.camera_ray = _loader.create_geometry_from_file("camera_ray", "data/objects/cylinder.obj", avango.gua.LoaderFlags.DEFAULTS)
+        self.camera_ray.Material.value.set_uniform("Color", avango.gua.Vec4(1.0, 0.0, 0.0, 1.0))
+        self.camera_ray.Tags.value = ["invisible"]
+        self.camera.Children.value.append(self.camera_ray)
         
 
     ### functions ###
@@ -441,8 +476,6 @@ class NavidgetNavigation(NavigationTechnique):
         
         return _mat
 
-        
-
     ### callback functions ###
     def evaluate(self): # implement respective base-class function
         if self.enable_flag == False:
@@ -450,3 +483,34 @@ class NavidgetNavigation(NavigationTechnique):
 
         ## To-Do: realize Navidget navigation here
 
+        if self.sphere_origin is None:
+            self.NAVIGATION_MANAGER.calc_pick_result()
+            self.NAVIGATION_MANAGER.update_ray_visualization()
+
+            if self.sf_pointer_button.value == True:
+                if self.button_pressed == False:
+                    self.button_pressed = True
+
+                    self.NAVIGATION_MANAGER.ray_geometry.Tags.value = ["invisible"]
+                    self.NAVIGATION_MANAGER.intersection_geometry.Tags.value = ["invisible"]
+                    self.sphere_origin = self.NAVIGATION_MANAGER.intersection_geometry
+
+                    # show sphere and camera
+                    self.sphere.Transform.value = self.NAVIGATION_MANAGER.intersection_geometry.Transform.value * \
+                                                    avango.gua.make_scale_mat(self.sphere_scale, self.sphere_scale, self.sphere_scale)
+                    self.sphere.Tags.value.remove("invisible")                   
+                    self.camera.Tags.value.remove("invisible")      
+                    self.camera_ray.Tags.value.remove("invisible")
+            else:
+                self.button_pressed = False
+        else:        
+            intersection_point_vec = self.NAVIGATION_MANAGER.intersection_geometry.WorldTransform.value.get_translate()
+            sphere_origin_vec = self.sphere_origin.WorldTransform.value.get_translate()
+            x = 2 * (sphere_origin_vec.x - intersection_point_vec.x)
+            y = 2 * (sphere_origin_vec.y - intersection_point_vec.y)
+            z = 2 * (sphere_origin_vec.z - intersection_point_vec.z)
+            self.camera.Transform.value = avango.gua.make_trans_mat(x, y, z)
+            distance = intersection_point_vec.distance_to(sphere_origin_vec)
+            self.camera_ray.Transform.value =  avango.gua.make_trans_mat(0.0,0.0, distance * -0.5) * \
+                                                avango.gua.make_rot_mat(-90.0,1,0,0) * \
+                                                avango.gua.make_scale_mat(self.ray_thickness, distance, self.ray_thickness)
